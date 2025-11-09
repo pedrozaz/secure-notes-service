@@ -1,17 +1,15 @@
 package io.github.pedrozaz.securenotesservice.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
+@Data
 public class User {
 
     @Id
@@ -32,7 +30,7 @@ public class User {
     
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL)
     private List<Note> recipientNotes = new ArrayList<>();
-    
+
     @PrePersist
     public void prePersist() {
         if (this.publicId == null) {

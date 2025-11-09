@@ -15,3 +15,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
+jwt:
+  secret: "c91d7d7b10f6a74e7399be3614457eed1b683359951a751dfc9d72785779c94b" #EXAMPLE 256 bit string
+  expiration:
+    ms: 86400000
