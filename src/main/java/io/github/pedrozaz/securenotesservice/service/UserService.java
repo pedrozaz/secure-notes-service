@@ -6,12 +6,15 @@ import io.github.pedrozaz.securenotesservice.model.User;
 import io.github.pedrozaz.securenotesservice.repository.PublicKeyRepository;
 import io.github.pedrozaz.securenotesservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyPair;
 import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -49,5 +52,17 @@ public class UserService {
         publicKeyRepository.save(userPublicKey);
 
         return savedUser;
+    }
+
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public PublicKey getPublicKeyForUser(UUID publicId) {
+        User user = userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + publicId));
+
+        return publicKeyRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Public key not found for user: " + user.getUsername()));
     }
 }
