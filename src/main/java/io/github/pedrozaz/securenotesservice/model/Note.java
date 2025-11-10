@@ -29,6 +29,10 @@ public class Note {
     @JoinColumn(name = "recipient_id")
     private User recipient;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String senderEphemeralPublicKey;
+
     @PrePersist
     public void prePersist() {
         if (this.publicId == null) {

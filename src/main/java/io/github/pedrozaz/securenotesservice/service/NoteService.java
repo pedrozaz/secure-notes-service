@@ -29,6 +29,18 @@ public class NoteService {
         note.setEncryptedContent(request.encryptedContent());
         note.setOwner(owner);
 
+        if (request.recipientPublicId() != null) {
+            User recipient = userRepository.findByPublicId(request.recipientPublicId())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + request.recipientPublicId()));
+
+            if (request.senderEphemeralPublicKey() == null | request.senderEphemeralPublicKey().isBlank()) {
+                throw new IllegalArgumentException("Sender Ephemeral Public Key is required to share a note.");
+            }
+
+            note.setRecipient(recipient);
+            note.setSenderEphemeralPublicKey(request.senderEphemeralPublicKey());
+        }
+
         return noteRepository.save(note);
     }
 }

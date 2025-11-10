@@ -28,9 +28,16 @@ public class NoteController {
             Authentication authentication) {
         String username = authentication.getName();
         Note createdNote = noteService.createNote(request, username);
+
+        String recipientUsername = null;
+        if (createdNote.getRecipient() != null) {
+            recipientUsername = createdNote.getRecipient().getUsername();
+        }
+
         NoteResponse noteResponse = new NoteResponse(
                 createdNote.getPublicId(),
-                createdNote.getOwner().getUsername()
+                createdNote.getOwner().getUsername(),
+                recipientUsername
         );
 
         return new ResponseEntity<>(noteResponse, HttpStatus.CREATED);
