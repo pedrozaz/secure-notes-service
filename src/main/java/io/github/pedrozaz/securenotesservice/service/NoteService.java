@@ -1,13 +1,16 @@
 package io.github.pedrozaz.securenotesservice.service;
 
 import io.github.pedrozaz.securenotesservice.dto.CreateNoteRequest;
+import io.github.pedrozaz.securenotesservice.dto.NoteDetailsResponse;
 import io.github.pedrozaz.securenotesservice.model.Note;
 import io.github.pedrozaz.securenotesservice.model.User;
 import io.github.pedrozaz.securenotesservice.repository.NoteRepository;
 import io.github.pedrozaz.securenotesservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class NoteService {
@@ -42,5 +45,50 @@ public class NoteService {
         }
 
         return noteRepository.save(note);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Note> findNotesByOwner(String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return owner.getOwnedNotes();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Note> findNotesReceivedByUser(String username) {
+        User recipient = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return  recipient.getRecipientNotes();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteDetailsResponse> findReceivedNotesAsDto(String username) {
+        User recipient = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        return recipient.getRecipientNotes().stream()
+                .map(this::mapToNoteDetailsResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteDetailsResponse> findOwnedNotesAsDto(String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        return owner.getOwnedNotes().stream()
+                .map(this::mapToNoteDetailsResponse)
+                .toList();
+    }
+
+    private NoteDetailsResponse mapToNoteDetailsResponse(Note note) {
+        String recipientUsername = note.getRecipient() != null ? note.getRecipient().getUsername() : null;
+        return new NoteDetailsResponse(
+                note.getPublicId(),
+                note.getEncryptedContent(),
+                note.getOwner().getUsername(),
+                recipientUsername,
+                note.getSenderEphemeralPublicKey()
+        );
     }
 }
